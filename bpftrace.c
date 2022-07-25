@@ -43,7 +43,7 @@ void eline(yed_event *event)  {
     if (!frame
     ||  !frame->buffer
     ||  frame->buffer->kind != BUFF_KIND_FILE
-    ||  frame->buffer->ft != yed_get_ft("S")) {
+    ||  frame->buffer->ft != yed_get_ft("BPF")) {
         return;
     }
 
@@ -85,12 +85,37 @@ int yed_plugin_boot(yed_plugin *self) {
 
     SYN();
         APUSH("&code-comment");
-            RANGE("#"); ONELINE();
+            RANGE("/\\*");
+            ENDRANGE(  "\\*/");
+            RANGE("//");
+                ONELINE();
             ENDRANGE("$");
+            RANGE("^[[:space:]]*#[[:space:]]*if[[:space:]]+0"WB);
+            ENDRANGE("^[[:space:]]*#[[:space:]]*(else|endif|elif|elifdef)"WB);
         APOP();
 
         APUSH("&code-string");
-            REGEXSUB("(\\.[A-Za-z]+)", 1);
+            REGEXSUB("(\"[A-Za-z]+\")", 1);
+        APOP();
+
+        APUSH("&code-preprocessor");
+            REGEXSUB("(BEGIN)", 1);
+            REGEXSUB("(END)", 1);
+            REGEXSUB("(kprobe)", 1);
+            REGEXSUB("(kretprobe)", 1);
+            REGEXSUB("(uprobe)", 1);
+            REGEXSUB("(uretprobe)", 1);
+            REGEXSUB("(tracepoint)", 1);
+            REGEXSUB("(usdt)", 1);
+            REGEXSUB("(profile)", 1);
+            REGEXSUB("(interval)", 1);
+            REGEXSUB("(software)", 1);
+            REGEXSUB("(hardware)", 1);
+            REGEXSUB("(watchpoint)", 1);
+            REGEXSUB("(asyncwatchpoint)", 1);
+            REGEXSUB("(kfunc)", 1);
+            REGEXSUB("(kretfunc)", 1);
+            REGEXSUB("(iter)", 1);
         APOP();
 
         APUSH("&code-number");
@@ -99,16 +124,85 @@ int yed_plugin_boot(yed_plugin *self) {
             REGEXSUB("(^|[^[:alnum:]_])(0[xX][0-9a-fA-F]+)"WB, 2);
         APOP();
 
+        APUSH("&code-typename");
+            REGEXSUB("(@[A-Za-z_]+)", 1);
+        APOP();
+
         APUSH("&code-control-flow");
-            REGEXSUB("(_[A-Za-z_]+)", 1);
+            KWD("break");
+            KWD("case");
+            KWD("continue");
+            KWD("default");
+            KWD("do");
+            KWD("else");
+            KWD("for");
+            KWD("goto");
+            KWD("if");
+            KWD("return");
+            KWD("switch");
+            KWD("while");
+            REGEXSUB("^[[:space:]]*([[:alpha:]_][[:alnum:]_]*):", 1);
         APOP();
 
         APUSH("&code-keyword");
-            REGEXSUB("([-])([[:alnum:]]+)", 2);
+            REGEXSUB("(count)\\(", 1);
+            REGEXSUB("(hist)\\(", 1);
+            REGEXSUB("(lhist)\\(", 1);
+            REGEXSUB("(nsecs)", 1);
+            REGEXSUB("(kstack)", 1);
+            REGEXSUB("(ustack)", 1);
+            REGEXSUB("(pid)", 1);
+            REGEXSUB("(tid)", 1);
+            REGEXSUB("(uid)", 1);
+            REGEXSUB("(gid)", 1);
+            REGEXSUB("(nsecs)", 1);
+            REGEXSUB("(elapsed)", 1);
+            REGEXSUB("(numaid)", 1);
+            REGEXSUB("(cpu)", 1);
+            REGEXSUB("(comm)", 1);
+            REGEXSUB("(kstack)", 1);
+            REGEXSUB("(ustack)", 1);
+            REGEXSUB("(arg[0-9]+)", 1);
+            REGEXSUB("(sarg[0-9]+)", 1);
+            REGEXSUB("(retval)", 1);
+            REGEXSUB("(func)", 1);
+            REGEXSUB("(probe)", 1);
+            REGEXSUB("(curtask)", 1);
+            REGEXSUB("(rand)", 1);
+            REGEXSUB("(cgroup)", 1);
+            REGEXSUB("(cpid)", 1);
+            REGEXSUB("(\\$[0-9A-Za-z_]+)", 1);
         APOP();
 
-        APUSH("&attention ");
-            REGEXSUB("^[[:space:]]*([A-Za-z]+)", 1);
+        APUSH("&code-fn-call");
+            REGEXSUB("(printf)\\(", 1);
+            REGEXSUB("(time)\\(", 1);
+            REGEXSUB("(join)\\(", 1);
+            REGEXSUB("(str)\\(", 1);
+            REGEXSUB("(ksym)\\(", 1);
+            REGEXSUB("(usym)\\(", 1);
+            REGEXSUB("(kaddr)\\(", 1);
+            REGEXSUB("(uaddr)\\(", 1);
+            REGEXSUB("(reg)\\(", 1);
+            REGEXSUB("(system)\\(", 1);
+            REGEXSUB("(exit)\\(", 1);
+            REGEXSUB("(cgroupid)\\(", 1);
+            REGEXSUB("(ntop)\\(", 1);
+            REGEXSUB("(kstack)\\(", 1);
+            REGEXSUB("(ustack)\\(", 1);
+            REGEXSUB("(cat)\\(", 1);
+            REGEXSUB("(signal)\\(", 1);
+            REGEXSUB("(strncmp)\\(", 1);
+            REGEXSUB("(override)\\(", 1);
+            REGEXSUB("(buf)\\(", 1);
+            REGEXSUB("(sizeof)\\(", 1);
+            REGEXSUB("(print)\\(", 1);
+            REGEXSUB("(strftime)\\(", 1);
+            REGEXSUB("(path)\\(", 1);
+            REGEXSUB("(uptr)\\(", 1);
+            REGEXSUB("(kptr)\\(", 1);
+            REGEXSUB("(macaddr)\\(", 1);
+            REGEXSUB("(cgroup_path)\\(", 1);
         APOP();
     ENDSYN();
 
