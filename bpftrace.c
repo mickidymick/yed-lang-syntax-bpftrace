@@ -95,7 +95,7 @@ int yed_plugin_boot(yed_plugin *self) {
         APOP();
 
         APUSH("&code-string");
-            REGEXSUB("(\"[A-Za-z]+\")", 1);
+            REGEXSUB("(\"[0-9A-Za-z]+\")", 1);
         APOP();
 
         APUSH("&code-preprocessor");
@@ -125,7 +125,7 @@ int yed_plugin_boot(yed_plugin *self) {
         APOP();
 
         APUSH("&code-typename");
-            REGEXSUB("(@[A-Za-z_]+)", 1);
+            REGEXSUB("(@[0-9A-Za-z_]+)", 1);
         APOP();
 
         APUSH("&code-control-flow");
