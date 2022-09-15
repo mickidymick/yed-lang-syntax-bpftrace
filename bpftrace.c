@@ -100,6 +100,7 @@ int yed_plugin_boot(yed_plugin *self) {
         APOP();
 
         APUSH("&code-preprocessor");
+            REGEXSUB("(#define[[:space:]]+[a-zA-Z0-9_]+)", 1);
             REGEXSUB("\\b(BEGIN)\\b", 1);
             REGEXSUB("\\b(END)\\b", 1);
             REGEXSUB("\\b(kprobe)\\b", 1);
@@ -173,7 +174,7 @@ int yed_plugin_boot(yed_plugin *self) {
             REGEXSUB("\\b(rand)\\b", 1);
             REGEXSUB("\\b(cgroup)\\b", 1);
             REGEXSUB("\\b(cpid)\\b", 1);
-            REGEXSUB("\\b(\\$[0-9A-Za-z_]+)\\b", 1);
+            REGEXSUB("(\\$[0-9A-Za-z_]+)", 1);
             REGEXSUB("\\b(struct)\\b", 1);
             REGEXSUB("\\b(typedef)\\b", 1);
         APOP();
